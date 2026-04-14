@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.deps import get_current_user, require_roles
+from app.core.reporting import validate_report_period
 from app.db.database import get_connection
 from app.models.schemas import EmploymentRecordCreate
 
@@ -37,6 +38,8 @@ def create_employment_record(
     if current_user["role"] == "enterprise" and current_user.get("enterprise_id") != payload.enterprise_id:
         raise HTTPException(status_code=403, detail="企业用户只能提交本企业数据")
 
+    validate_report_period(payload.report_type, payload.report_period)
+
     connection = get_connection()
     cursor = connection.execute(
         """
@@ -52,7 +55,7 @@ def create_employment_record(
             payload.report_period,
             payload.employed_count,
             payload.new_hires,
-            "draft" if current_user["role"] == "admin" else "city_pending",
+            "draft",
             current_user["id"],
         ),
     )

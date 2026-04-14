@@ -13,12 +13,12 @@
           <p class="eyebrow">Week 2 Implementation</p>
           <h1>云南省企业就业失业数据采集系统</h1>
           <p class="hero-copy">
-            当前已切换到 v0.3 计划节奏。这个版本开始实现多角色登录、企业信息管理，以及为“半月报 + 审核流”预留的数据模型与工作台结构。
+            当前已切换到 v0.3 计划节奏。这个版本开始实现多角色登录、企业信息管理、就业失业填报、企业上报与市级审核第一页。
           </p>
         </div>
         <div class="hero-panel">
           <div class="panel-label">当前阶段</div>
-          <strong>Week 2 / 登录与企业管理</strong>
+          <strong>Week 2 / 填报与上报流转</strong>
           <span id="health-status">正在检查后端状态...</span>
           <span id="session-summary">尚未登录</span>
         </div>
@@ -33,6 +33,7 @@
           <div class="nav-list">
             <button class="nav-button is-active" data-view="dashboard">项目总览</button>
             <button class="nav-button" data-view="enterprises">企业管理</button>
+            <button class="nav-button" data-view="reports">就业失业填报</button>
             <button class="nav-button" data-view="review">审核工作台</button>
           </div>
           <div class="card sidebar-note">
@@ -113,7 +114,8 @@
               <ul>
                 <li>登录后根据角色切换工作台内容，支持企业、市级、省级、管理员四类用户。</li>
                 <li>企业信息管理进入第一版可用状态，管理员可新增，企业用户可维护本企业信息。</li>
-                <li>后端数据模型已支持报表周期与审核状态，为半月报和审核流做准备。</li>
+                <li>就业与失业记录已支持草稿、提交、市级待审等状态流转。</li>
+                <li>后端数据模型已支持半月报规则校验和市级审核工作队列。</li>
               </ul>
             </section>
           </section>
@@ -200,31 +202,176 @@
             </section>
           </section>
 
+          <section id="reports-view" class="content-grid app-view hidden">
+            <section class="card report-form-card">
+              <div class="section-head">
+                <div>
+                  <h2>就业数据填报</h2>
+                  <p class="muted">系统会根据月份自动判定是半月报还是整月报。</p>
+                </div>
+              </div>
+              <form id="employment-form" class="form-grid two-column">
+                <label>
+                  <span>填报企业</span>
+                  <select id="employment-enterprise-select"></select>
+                </label>
+                <label>
+                  <span>报送月份</span>
+                  <input id="employment-report-month" type="month" value="2026-04" required />
+                </label>
+                <label id="employment-half-row" class="hidden">
+                  <span>半月周期</span>
+                  <select id="employment-half-selector">
+                    <option value="H1">上半月</option>
+                    <option value="H2">下半月</option>
+                  </select>
+                </label>
+                <label>
+                  <span>在岗人数</span>
+                  <input id="employment-count-input" type="number" min="0" value="48" required />
+                </label>
+                <label>
+                  <span>新增就业人数</span>
+                  <input id="new-hires-input" type="number" min="0" value="6" required />
+                </label>
+                <div class="field-note full-row" id="employment-period-hint">当前月份按整月报提交。</div>
+                <div class="button-row full-row">
+                  <button type="submit">保存就业草稿</button>
+                </div>
+              </form>
+              <p id="employment-form-result" class="muted">请先登录后再创建就业记录。</p>
+            </section>
+
+            <section class="card report-form-card">
+              <div class="section-head">
+                <div>
+                  <h2>失业数据填报</h2>
+                  <p class="muted">企业先保存草稿，再执行正式上报。</p>
+                </div>
+              </div>
+              <form id="unemployment-form" class="form-grid two-column">
+                <label>
+                  <span>填报企业</span>
+                  <select id="unemployment-enterprise-select"></select>
+                </label>
+                <label>
+                  <span>报送月份</span>
+                  <input id="unemployment-report-month" type="month" value="2026-04" required />
+                </label>
+                <label id="unemployment-half-row" class="hidden">
+                  <span>半月周期</span>
+                  <select id="unemployment-half-selector">
+                    <option value="H1">上半月</option>
+                    <option value="H2">下半月</option>
+                  </select>
+                </label>
+                <label>
+                  <span>失业人数</span>
+                  <input id="unemployment-count-input" type="number" min="0" value="4" required />
+                </label>
+                <label>
+                  <span>裁员人数</span>
+                  <input id="layoffs-input" type="number" min="0" value="1" required />
+                </label>
+                <div class="field-note full-row" id="unemployment-period-hint">当前月份按整月报提交。</div>
+                <div class="button-row full-row">
+                  <button type="submit">保存失业草稿</button>
+                </div>
+              </form>
+              <p id="unemployment-form-result" class="muted">请先登录后再创建失业记录。</p>
+            </section>
+
+            <section class="card table-card">
+              <div class="section-head">
+                <div>
+                  <h2>就业记录</h2>
+                  <p class="muted">企业可对草稿或退回记录执行上报。</p>
+                </div>
+                <button id="refresh-records-button" type="button">刷新记录</button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>企业</th>
+                    <th>周期</th>
+                    <th>在岗人数</th>
+                    <th>新增就业</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="employment-table-body">
+                  <tr>
+                    <td colspan="7">登录后加载就业记录...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="card table-card">
+              <div class="section-head">
+                <div>
+                  <h2>失业记录</h2>
+                  <p class="muted">市级审核会基于这里的上报结果进行处理。</p>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>企业</th>
+                    <th>周期</th>
+                    <th>失业人数</th>
+                    <th>裁员人数</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="unemployment-table-body">
+                  <tr>
+                    <td colspan="7">登录后加载失业记录...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          </section>
+
           <section id="review-view" class="content-grid app-view hidden">
             <section class="card review-card">
-              <h2>审核工作台预览</h2>
-              <div class="timeline-list">
-                <article>
-                  <strong>企业填报阶段</strong>
-                  <span>企业完成就业失业数据录入，并按周期提交。</span>
-                </article>
-                <article>
-                  <strong>市级审核阶段</strong>
-                  <span>市级审核员查看待审记录、填写意见并决定通过或退回。</span>
-                </article>
-                <article>
-                  <strong>省级审核阶段</strong>
-                  <span>省级审核员完成终审，并形成最终状态。</span>
-                </article>
+              <div class="section-head">
+                <div>
+                  <h2>审核队列</h2>
+                  <p class="muted">市级审核员处理 city_pending，省级审核员处理 province_pending。</p>
+                </div>
+                <button id="refresh-review-button" type="button">刷新审核队列</button>
               </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>类型</th>
+                    <th>企业</th>
+                    <th>周期</th>
+                    <th>当前状态</th>
+                    <th>数据值</th>
+                    <th>审核意见</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="review-queue-body">
+                  <tr>
+                    <td colspan="7">登录后加载审核队列...</td>
+                  </tr>
+                </tbody>
+              </table>
             </section>
 
             <section class="card review-card">
               <h2>当前实现说明</h2>
               <ul>
-                <li>这轮已经完成多角色登录与权限基础，审核流状态字段已纳入后端模型。</li>
-                <li>市级审核、省级审核页面将在后续迭代中承接当前工作台结构继续扩展。</li>
-                <li>手机端适配会沿用当前响应式布局体系，不另起一套页面。</li>
+                <li>企业当前可先保存就业和失业草稿，再逐条提交到市级审核队列。</li>
+                <li>市级审核员已可以看到待审记录，并执行通过或退回动作。</li>
+                <li>省级审核流接口已经预留，后续将在当前页面继续扩展终审处理。</li>
               </ul>
             </section>
           </section>

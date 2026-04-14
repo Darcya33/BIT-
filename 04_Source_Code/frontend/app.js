@@ -11,6 +11,9 @@ const demoAccounts = [
 const state = {
   currentUser: null,
   enterprises: [],
+  employmentRecords: [],
+  unemploymentRecords: [],
+  workflowQueue: [],
   currentView: "dashboard",
 };
 
@@ -25,7 +28,12 @@ const demoAccountList = document.querySelector("#demo-account-list");
 const navButtons = document.querySelectorAll(".nav-button");
 const appViews = document.querySelectorAll(".app-view");
 const refreshButton = document.querySelector("#refresh-button");
+const refreshRecordsButton = document.querySelector("#refresh-records-button");
+const refreshReviewButton = document.querySelector("#refresh-review-button");
 const enterpriseTableBody = document.querySelector("#enterprise-table-body");
+const employmentTableBody = document.querySelector("#employment-table-body");
+const unemploymentTableBody = document.querySelector("#unemployment-table-body");
+const reviewQueueBody = document.querySelector("#review-queue-body");
 const enterpriseForm = document.querySelector("#enterprise-form");
 const enterpriseFormTitle = document.querySelector("#enterprise-form-title");
 const enterpriseFormHint = document.querySelector("#enterprise-form-hint");
@@ -40,6 +48,24 @@ const industryTypeInput = document.querySelector("#industry-type-input");
 const cityNameInput = document.querySelector("#city-name-input");
 const provinceNameInput = document.querySelector("#province-name-input");
 const reportingFrequencyRuleInput = document.querySelector("#reporting-frequency-rule-input");
+const employmentForm = document.querySelector("#employment-form");
+const unemploymentForm = document.querySelector("#unemployment-form");
+const employmentEnterpriseSelect = document.querySelector("#employment-enterprise-select");
+const unemploymentEnterpriseSelect = document.querySelector("#unemployment-enterprise-select");
+const employmentReportMonth = document.querySelector("#employment-report-month");
+const unemploymentReportMonth = document.querySelector("#unemployment-report-month");
+const employmentHalfRow = document.querySelector("#employment-half-row");
+const unemploymentHalfRow = document.querySelector("#unemployment-half-row");
+const employmentHalfSelector = document.querySelector("#employment-half-selector");
+const unemploymentHalfSelector = document.querySelector("#unemployment-half-selector");
+const employmentCountInput = document.querySelector("#employment-count-input");
+const unemploymentCountInput = document.querySelector("#unemployment-count-input");
+const newHiresInput = document.querySelector("#new-hires-input");
+const layoffsInput = document.querySelector("#layoffs-input");
+const employmentPeriodHint = document.querySelector("#employment-period-hint");
+const unemploymentPeriodHint = document.querySelector("#unemployment-period-hint");
+const employmentFormResult = document.querySelector("#employment-form-result");
+const unemploymentFormResult = document.querySelector("#unemployment-form-result");
 
 const enterpriseCount = document.querySelector("#enterprise-count");
 const employedTotal = document.querySelector("#employed-total");
@@ -131,6 +157,80 @@ function setActiveView(viewName) {
   appViews.forEach((view) => {
     view.classList.toggle("hidden", view.id !== `${viewName}-view`);
   });
+}
+
+
+function mapStatusLabel(status) {
+  const dictionary = {
+    draft: "草稿",
+    city_pending: "待市级审核",
+    city_rejected: "市级退回",
+    province_pending: "待省级审核",
+    province_rejected: "省级退回",
+    approved: "审核通过",
+  };
+  return dictionary[status] || status;
+}
+
+
+function isQ1Month(monthValue) {
+  if (!monthValue || !monthValue.includes("-")) {
+    return false;
+  }
+  const month = monthValue.split("-")[1];
+  return ["01", "02", "03"].includes(month);
+}
+
+
+function buildReportMeta(monthValue, halfValue) {
+  if (isQ1Month(monthValue)) {
+    return {
+      report_type: "half_month",
+      report_period: `${monthValue}-${halfValue}`,
+      periodLabel: `${monthValue} ${halfValue === "H1" ? "上半月" : "下半月"}`,
+    };
+  }
+
+  return {
+    report_type: "monthly",
+    report_period: monthValue,
+    periodLabel: `${monthValue} 整月`,
+  };
+}
+
+
+function updatePeriodControls(monthInput, halfRow, hintNode, halfSelector) {
+  const monthValue = monthInput.value;
+  if (isQ1Month(monthValue)) {
+    halfRow.classList.remove("hidden");
+    const meta = buildReportMeta(monthValue, halfSelector.value);
+    hintNode.textContent = `当前月份属于一季度，需按半月报提交：${meta.periodLabel}`;
+    return;
+  }
+
+  halfRow.classList.add("hidden");
+  const meta = buildReportMeta(monthValue, halfSelector.value);
+  hintNode.textContent = `当前月份按整月报提交：${meta.periodLabel}`;
+}
+
+
+function populateEnterpriseSelects() {
+  const options = state.enterprises
+    .map((enterprise) => `<option value="${enterprise.id}">${enterprise.name}</option>`)
+    .join("");
+
+  employmentEnterpriseSelect.innerHTML = options || '<option value="">暂无企业</option>';
+  unemploymentEnterpriseSelect.innerHTML = options || '<option value="">暂无企业</option>';
+
+  if (state.currentUser?.role === "enterprise" && state.currentUser.enterprise_id) {
+    employmentEnterpriseSelect.value = String(state.currentUser.enterprise_id);
+    unemploymentEnterpriseSelect.value = String(state.currentUser.enterprise_id);
+    employmentEnterpriseSelect.disabled = true;
+    unemploymentEnterpriseSelect.disabled = true;
+  } else {
+    employmentEnterpriseSelect.disabled = false;
+    unemploymentEnterpriseSelect.disabled = false;
+  }
 }
 
 
@@ -242,6 +342,93 @@ function renderEnterpriseTable() {
 }
 
 
+function renderRecordTable(tableBody, records, recordType) {
+  if (!state.currentUser) {
+    tableBody.innerHTML = '<tr><td colspan="7">请先登录后再查看记录。</td></tr>';
+    return;
+  }
+
+  if (!records.length) {
+    tableBody.innerHTML = '<tr><td colspan="7">暂无记录</td></tr>';
+    return;
+  }
+
+  tableBody.innerHTML = records
+    .map((record) => {
+      const submitButton = ["draft", "city_rejected"].includes(record.workflow_status) && ["enterprise", "admin"].includes(state.currentUser.role)
+        ? `<button type="button" data-submit-type="${recordType}" data-submit-id="${record.id}">提交上报</button>`
+        : '<span class="badge">已提交或只读</span>';
+
+      return `
+        <tr>
+          <td>${record.id}</td>
+          <td>${record.enterprise_name}</td>
+          <td>${record.report_period}</td>
+          <td>${recordType === "employment" ? record.employed_count : record.unemployed_count}</td>
+          <td>${recordType === "employment" ? record.new_hires : record.layoffs}</td>
+          <td>${mapStatusLabel(record.workflow_status)}</td>
+          <td><div class="table-actions">${submitButton}</div></td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  tableBody.querySelectorAll("button[data-submit-id]").forEach((button) => {
+    button.addEventListener("click", () => submitRecord(button.dataset.submitType, Number(button.dataset.submitId)));
+  });
+}
+
+
+function renderWorkflowQueue() {
+  if (!state.currentUser) {
+    reviewQueueBody.innerHTML = '<tr><td colspan="7">请先登录后再查看审核队列。</td></tr>';
+    return;
+  }
+
+  if (!state.workflowQueue.length) {
+    reviewQueueBody.innerHTML = '<tr><td colspan="7">当前角色暂无待处理记录。</td></tr>';
+    return;
+  }
+
+  reviewQueueBody.innerHTML = state.workflowQueue
+    .map((record) => {
+      let actionHtml = '<span class="badge">查看中</span>';
+      if (["city_reviewer", "province_reviewer"].includes(state.currentUser.role)) {
+        actionHtml = `
+          <div class="table-actions">
+            <button type="button" data-review-action="approve" data-review-type="${record.record_type}" data-review-id="${record.id}">通过</button>
+            <button type="button" class="ghost-button" data-review-action="reject" data-review-type="${record.record_type}" data-review-id="${record.id}">退回</button>
+          </div>
+        `;
+      }
+
+      const comment = record.province_review_comment || record.city_review_comment || "-";
+      return `
+        <tr>
+          <td>${record.record_type === "employment" ? "就业" : "失业"}</td>
+          <td>${record.enterprise_name}</td>
+          <td>${record.report_period}</td>
+          <td>${mapStatusLabel(record.workflow_status)}</td>
+          <td>${record.report_value}</td>
+          <td>${comment}</td>
+          <td>${actionHtml}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  reviewQueueBody.querySelectorAll("button[data-review-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      reviewRecord(
+        button.dataset.reviewType,
+        Number(button.dataset.reviewId),
+        button.dataset.reviewAction,
+      );
+    });
+  });
+}
+
+
 async function loadOverview() {
   if (!state.currentUser) {
     enterpriseCount.textContent = "-";
@@ -287,11 +474,66 @@ async function loadEnterprises() {
       headers: getAuthHeaders(),
     });
     state.enterprises = rows;
+    populateEnterpriseSelects();
     renderEnterpriseTable();
     updateEnterpriseFormByRole();
   } catch (error) {
     state.enterprises = [];
     enterpriseTableBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
+  }
+}
+
+
+async function loadEmploymentRecords() {
+  if (!state.currentUser) {
+    state.employmentRecords = [];
+    renderRecordTable(employmentTableBody, state.employmentRecords, "employment");
+    return;
+  }
+
+  try {
+    state.employmentRecords = await requestJson(`${API_BASE_URL}/employment-records`, {
+      headers: getAuthHeaders(),
+    });
+    renderRecordTable(employmentTableBody, state.employmentRecords, "employment");
+  } catch (error) {
+    employmentTableBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
+  }
+}
+
+
+async function loadUnemploymentRecords() {
+  if (!state.currentUser) {
+    state.unemploymentRecords = [];
+    renderRecordTable(unemploymentTableBody, state.unemploymentRecords, "unemployment");
+    return;
+  }
+
+  try {
+    state.unemploymentRecords = await requestJson(`${API_BASE_URL}/unemployment-records`, {
+      headers: getAuthHeaders(),
+    });
+    renderRecordTable(unemploymentTableBody, state.unemploymentRecords, "unemployment");
+  } catch (error) {
+    unemploymentTableBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
+  }
+}
+
+
+async function loadWorkflowQueue() {
+  if (!state.currentUser) {
+    state.workflowQueue = [];
+    renderWorkflowQueue();
+    return;
+  }
+
+  try {
+    state.workflowQueue = await requestJson(`${API_BASE_URL}/workflow/queue`, {
+      headers: getAuthHeaders(),
+    });
+    renderWorkflowQueue();
+  } catch (error) {
+    reviewQueueBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
   }
 }
 
@@ -315,8 +557,20 @@ async function handleLogin(event) {
     state.currentUser = result.user;
     updateSessionSummary();
     loginResult.textContent = `${result.message}，当前角色：${result.user.role}`;
-    setActiveView(result.user.role === "enterprise" ? "enterprises" : "dashboard");
-    await Promise.all([loadOverview(), loadEnterprises()]);
+    if (result.user.role === "enterprise") {
+      setActiveView("reports");
+    } else if (["city_reviewer", "province_reviewer"].includes(result.user.role)) {
+      setActiveView("review");
+    } else {
+      setActiveView("dashboard");
+    }
+    await Promise.all([
+      loadOverview(),
+      loadEnterprises(),
+      loadEmploymentRecords(),
+      loadUnemploymentRecords(),
+      loadWorkflowQueue(),
+    ]);
   } catch (error) {
     loginResult.textContent = error.message;
   }
@@ -326,8 +580,14 @@ async function handleLogin(event) {
 function handleLogout() {
   state.currentUser = null;
   state.enterprises = [];
+  state.employmentRecords = [];
+  state.unemploymentRecords = [];
+  state.workflowQueue = [];
   updateSessionSummary();
   renderEnterpriseTable();
+  renderRecordTable(employmentTableBody, state.employmentRecords, "employment");
+  renderRecordTable(unemploymentTableBody, state.unemploymentRecords, "unemployment");
+  renderWorkflowQueue();
   updateEnterpriseFormByRole();
   setActiveView("dashboard");
   loginResult.textContent = "已退出登录。";
@@ -386,11 +646,155 @@ async function saveEnterprise(event) {
 }
 
 
+async function createEmploymentRecord(event) {
+  event.preventDefault();
+
+  if (!state.currentUser) {
+    employmentFormResult.textContent = "请先登录后再创建就业记录。";
+    return;
+  }
+
+  const monthValue = employmentReportMonth.value;
+  const meta = buildReportMeta(monthValue, employmentHalfSelector.value);
+  const payload = {
+    enterprise_id: Number(employmentEnterpriseSelect.value),
+    report_type: meta.report_type,
+    report_period: meta.report_period,
+    employed_count: Number(employmentCountInput.value),
+    new_hires: Number(newHiresInput.value),
+  };
+
+  try {
+    const result = await requestJson(`${API_BASE_URL}/employment-records`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(payload),
+    });
+    employmentFormResult.textContent = `${result.message}，当前状态为草稿。`;
+    await Promise.all([loadEmploymentRecords(), loadOverview(), loadWorkflowQueue()]);
+  } catch (error) {
+    employmentFormResult.textContent = error.message;
+  }
+}
+
+
+async function createUnemploymentRecord(event) {
+  event.preventDefault();
+
+  if (!state.currentUser) {
+    unemploymentFormResult.textContent = "请先登录后再创建失业记录。";
+    return;
+  }
+
+  const monthValue = unemploymentReportMonth.value;
+  const meta = buildReportMeta(monthValue, unemploymentHalfSelector.value);
+  const payload = {
+    enterprise_id: Number(unemploymentEnterpriseSelect.value),
+    report_type: meta.report_type,
+    report_period: meta.report_period,
+    unemployed_count: Number(unemploymentCountInput.value),
+    layoffs: Number(layoffsInput.value),
+  };
+
+  try {
+    const result = await requestJson(`${API_BASE_URL}/unemployment-records`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(payload),
+    });
+    unemploymentFormResult.textContent = `${result.message}，当前状态为草稿。`;
+    await Promise.all([loadUnemploymentRecords(), loadOverview(), loadWorkflowQueue()]);
+  } catch (error) {
+    unemploymentFormResult.textContent = error.message;
+  }
+}
+
+
+async function submitRecord(recordType, recordId) {
+  try {
+    const result = await requestJson(`${API_BASE_URL}/workflow/submit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify({
+        record_type: recordType,
+        record_id: recordId,
+      }),
+    });
+
+    if (recordType === "employment") {
+      employmentFormResult.textContent = result.message;
+    } else {
+      unemploymentFormResult.textContent = result.message;
+    }
+
+    await Promise.all([
+      loadEmploymentRecords(),
+      loadUnemploymentRecords(),
+      loadWorkflowQueue(),
+      loadOverview(),
+    ]);
+  } catch (error) {
+    if (recordType === "employment") {
+      employmentFormResult.textContent = error.message;
+    } else {
+      unemploymentFormResult.textContent = error.message;
+    }
+  }
+}
+
+
+async function reviewRecord(recordType, recordId, action) {
+  const comment = window.prompt(action === "approve" ? "请输入审核通过意见" : "请输入退回原因", action === "approve" ? "审核通过" : "请补充后重新提交");
+  if (!comment) {
+    return;
+  }
+
+  try {
+    await requestJson(`${API_BASE_URL}/workflow/review`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify({
+        record_type: recordType,
+        record_id: recordId,
+        action,
+        review_comment: comment,
+      }),
+    });
+
+    await Promise.all([
+      loadEmploymentRecords(),
+      loadUnemploymentRecords(),
+      loadWorkflowQueue(),
+      loadOverview(),
+    ]);
+  } catch (error) {
+    reviewQueueBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
+  }
+}
+
+
 async function bootstrap() {
   renderDemoAccounts();
   await loadHealth();
   renderEnterpriseTable();
+  renderRecordTable(employmentTableBody, state.employmentRecords, "employment");
+  renderRecordTable(unemploymentTableBody, state.unemploymentRecords, "unemployment");
+  renderWorkflowQueue();
   updateEnterpriseFormByRole();
+  updatePeriodControls(employmentReportMonth, employmentHalfRow, employmentPeriodHint, employmentHalfSelector);
+  updatePeriodControls(unemploymentReportMonth, unemploymentHalfRow, unemploymentPeriodHint, unemploymentHalfSelector);
 }
 
 
@@ -399,8 +803,20 @@ logoutButton.addEventListener("click", handleLogout);
 refreshButton.addEventListener("click", async () => {
   await Promise.all([loadOverview(), loadEnterprises()]);
 });
+refreshRecordsButton.addEventListener("click", async () => {
+  await Promise.all([loadEmploymentRecords(), loadUnemploymentRecords(), loadWorkflowQueue(), loadOverview()]);
+});
+refreshReviewButton.addEventListener("click", async () => {
+  await Promise.all([loadWorkflowQueue(), loadOverview()]);
+});
 enterpriseForm.addEventListener("submit", saveEnterprise);
+employmentForm.addEventListener("submit", createEmploymentRecord);
+unemploymentForm.addEventListener("submit", createUnemploymentRecord);
 resetEnterpriseButton.addEventListener("click", () => updateEnterpriseFormByRole());
+employmentReportMonth.addEventListener("change", () => updatePeriodControls(employmentReportMonth, employmentHalfRow, employmentPeriodHint, employmentHalfSelector));
+employmentHalfSelector.addEventListener("change", () => updatePeriodControls(employmentReportMonth, employmentHalfRow, employmentPeriodHint, employmentHalfSelector));
+unemploymentReportMonth.addEventListener("change", () => updatePeriodControls(unemploymentReportMonth, unemploymentHalfRow, unemploymentPeriodHint, unemploymentHalfSelector));
+unemploymentHalfSelector.addEventListener("change", () => updatePeriodControls(unemploymentReportMonth, unemploymentHalfRow, unemploymentPeriodHint, unemploymentHalfSelector));
 navButtons.forEach((button) => {
   button.addEventListener("click", () => setActiveView(button.dataset.view));
 });

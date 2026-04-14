@@ -242,6 +242,14 @@ select:focus {
   box-shadow: none;
 }
 
+.field-note {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(0, 109, 91, 0.08);
+  color: var(--accent);
+  font-size: 14px;
+}
+
 button {
   border: 0;
   border-radius: 999px;
@@ -305,6 +313,11 @@ button:hover {
   border-radius: 18px;
   border: 1px solid var(--line);
   background: var(--surface-strong);
+}
+
+.report-form-card,
+.review-card {
+  min-height: 100%;
 }
 
 .table-actions {

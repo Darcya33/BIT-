@@ -70,3 +70,15 @@ class UnemploymentRecordCreate(BaseModel):
     report_period: str = Field(..., min_length=7, max_length=20)
     unemployed_count: int = Field(..., ge=0)
     layoffs: int = Field(..., ge=0)
+
+
+class WorkflowSubmitRequest(BaseModel):
+    record_type: str = Field(..., min_length=5, max_length=20)
+    record_id: int = Field(..., ge=1)
+
+
+class WorkflowReviewRequest(BaseModel):
+    record_type: str = Field(..., min_length=5, max_length=20)
+    record_id: int = Field(..., ge=1)
+    action: str = Field(..., min_length=6, max_length=20)
+    review_comment: str = Field(..., min_length=2, max_length=200)
