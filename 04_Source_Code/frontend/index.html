@@ -10,83 +10,224 @@
     <div class="page-shell">
       <header class="hero">
         <div>
-          <p class="eyebrow">Course Project MVP</p>
+          <p class="eyebrow">Week 2 Implementation</p>
           <h1>云南省企业就业失业数据采集系统</h1>
           <p class="hero-copy">
-            第 3 天已完成系统骨架搭建。当前页面用于展示后端接口联通状态、基础统计卡片和样例企业数据。
+            当前已切换到 v0.3 计划节奏。这个版本开始实现多角色登录、企业信息管理，以及为“半月报 + 审核流”预留的数据模型与工作台结构。
           </p>
         </div>
         <div class="hero-panel">
           <div class="panel-label">当前阶段</div>
-          <strong>Day 3 / 系统骨架完成</strong>
+          <strong>Week 2 / 登录与企业管理</strong>
           <span id="health-status">正在检查后端状态...</span>
+          <span id="session-summary">尚未登录</span>
         </div>
       </header>
 
-      <main class="content-grid">
-        <section class="card login-card">
-          <h2>默认演示账号</h2>
-          <div class="credentials">
-            <span>用户名：admin</span>
-            <span>密码：admin123</span>
+      <main class="workspace">
+        <aside class="sidebar card">
+          <div class="sidebar-head">
+            <h2>工作台导航</h2>
+            <p class="muted">登录后按角色展示可操作视图</p>
           </div>
-          <button id="login-button" type="button">验证登录接口</button>
-          <p id="login-result" class="muted">尚未调用登录接口</p>
-        </section>
-
-        <section class="card stats-card">
-          <h2>基础统计概览</h2>
-          <div class="stats-grid">
-            <article>
-              <span>企业数量</span>
-              <strong id="enterprise-count">-</strong>
-            </article>
-            <article>
-              <span>就业总人数</span>
-              <strong id="employed-total">-</strong>
-            </article>
-            <article>
-              <span>失业总人数</span>
-              <strong id="unemployed-total">-</strong>
-            </article>
-            <article>
-              <span>新增就业</span>
-              <strong id="new-hires-total">-</strong>
-            </article>
+          <div class="nav-list">
+            <button class="nav-button is-active" data-view="dashboard">项目总览</button>
+            <button class="nav-button" data-view="enterprises">企业管理</button>
+            <button class="nav-button" data-view="review">审核工作台</button>
           </div>
-        </section>
-
-        <section class="card table-card">
-          <div class="section-head">
-            <h2>企业样例数据</h2>
-            <button id="refresh-button" type="button">刷新数据</button>
+          <div class="card sidebar-note">
+            <div class="panel-label">报表规则</div>
+            <ul>
+              <li>1 至 3 月采用半月报。</li>
+              <li>4 至 12 月采用整月报。</li>
+              <li>当前版本已在后端模型中预留周期与审核状态字段。</li>
+            </ul>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>企业名称</th>
-                <th>统一社会信用代码</th>
-                <th>联系人</th>
-                <th>联系电话</th>
-              </tr>
-            </thead>
-            <tbody id="enterprise-table-body">
-              <tr>
-                <td colspan="5">正在加载数据...</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+        </aside>
 
-        <section class="card notes-card">
-          <h2>第 3 天交付说明</h2>
-          <ul>
-            <li>后端已搭建 FastAPI 应用骨架并划分认证、企业、就业、失业、统计五类路由。</li>
-            <li>SQLite 数据库已初始化，内置一组演示数据用于后续前后端联调。</li>
-            <li>前端已完成首页框架，可直接连接后端接口显示统计与企业列表。</li>
-            <li>后续第 4 到第 8 天将在该骨架上逐步补齐登录、CRUD、查询与导出功能。</li>
-          </ul>
+        <section class="main-panel">
+          <section class="content-grid auth-grid">
+            <section class="card login-card">
+              <div class="section-head compact">
+                <div>
+                  <h2>登录系统</h2>
+                  <p class="muted">当前演示的是多角色登录与权限分流的第一版。</p>
+                </div>
+              </div>
+              <form id="login-form" class="form-grid">
+                <label>
+                  <span>用户名</span>
+                  <input id="username-input" name="username" type="text" value="admin" required />
+                </label>
+                <label>
+                  <span>密码</span>
+                  <input id="password-input" name="password" type="password" value="admin123" required />
+                </label>
+                <div class="button-row">
+                  <button id="login-button" type="submit">登录并进入工作台</button>
+                  <button id="logout-button" type="button" class="ghost-button">退出登录</button>
+                </div>
+              </form>
+              <p id="login-result" class="muted">尚未调用登录接口</p>
+            </section>
+
+            <section class="card account-card">
+              <h2>演示账号</h2>
+              <div id="demo-account-list" class="account-list"></div>
+            </section>
+          </section>
+
+          <section id="dashboard-view" class="content-grid app-view">
+            <section class="card stats-card">
+              <h2>业务概览</h2>
+              <div class="stats-grid stats-grid-six">
+                <article>
+                  <span>企业数量</span>
+                  <strong id="enterprise-count">-</strong>
+                </article>
+                <article>
+                  <span>就业总人数</span>
+                  <strong id="employed-total">-</strong>
+                </article>
+                <article>
+                  <span>失业总人数</span>
+                  <strong id="unemployed-total">-</strong>
+                </article>
+                <article>
+                  <span>新增就业</span>
+                  <strong id="new-hires-total">-</strong>
+                </article>
+                <article>
+                  <span>待市级审核</span>
+                  <strong id="city-pending-count">-</strong>
+                </article>
+                <article>
+                  <span>待省级审核</span>
+                  <strong id="province-pending-count">-</strong>
+                </article>
+              </div>
+            </section>
+
+            <section class="card notes-card">
+              <h2>本周实现重点</h2>
+              <ul>
+                <li>登录后根据角色切换工作台内容，支持企业、市级、省级、管理员四类用户。</li>
+                <li>企业信息管理进入第一版可用状态，管理员可新增，企业用户可维护本企业信息。</li>
+                <li>后端数据模型已支持报表周期与审核状态，为半月报和审核流做准备。</li>
+              </ul>
+            </section>
+          </section>
+
+          <section id="enterprises-view" class="content-grid app-view hidden">
+            <section class="card table-card">
+              <div class="section-head">
+                <div>
+                  <h2>企业信息管理</h2>
+                  <p class="muted">管理员查看全部企业；企业用户仅查看并维护本企业信息。</p>
+                </div>
+                <button id="refresh-button" type="button">刷新企业数据</button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>企业名称</th>
+                    <th>行业</th>
+                    <th>地区</th>
+                    <th>规则</th>
+                    <th>联系人</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="enterprise-table-body">
+                  <tr>
+                    <td colspan="7">登录后加载企业数据...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="card enterprise-form-card">
+              <div class="section-head compact">
+                <div>
+                  <h2 id="enterprise-form-title">企业信息表单</h2>
+                  <p id="enterprise-form-hint" class="muted">管理员可新增企业，企业用户可编辑本企业资料。</p>
+                </div>
+              </div>
+              <form id="enterprise-form" class="form-grid two-column">
+                <input id="enterprise-id-input" type="hidden" />
+                <label>
+                  <span>企业名称</span>
+                  <input id="enterprise-name-input" type="text" required />
+                </label>
+                <label>
+                  <span>统一社会信用代码</span>
+                  <input id="social-credit-code-input" type="text" required />
+                </label>
+                <label>
+                  <span>联系人</span>
+                  <input id="contact-person-input" type="text" required />
+                </label>
+                <label>
+                  <span>联系电话</span>
+                  <input id="contact-phone-input" type="text" required />
+                </label>
+                <label>
+                  <span>行业类型</span>
+                  <input id="industry-type-input" type="text" value="数字服务" required />
+                </label>
+                <label>
+                  <span>城市</span>
+                  <input id="city-name-input" type="text" value="昆明市" required />
+                </label>
+                <label>
+                  <span>省份</span>
+                  <input id="province-name-input" type="text" value="云南省" required />
+                </label>
+                <label>
+                  <span>报送规则</span>
+                  <select id="reporting-frequency-rule-input">
+                    <option value="Q1_HALF_MONTH_OTHER_MONTHLY">一季度半月报，其余月份整月报</option>
+                    <option value="MONTHLY_ONLY">整月报</option>
+                  </select>
+                </label>
+                <div class="button-row full-row">
+                  <button id="save-enterprise-button" type="submit">保存企业信息</button>
+                  <button id="reset-enterprise-button" type="button" class="ghost-button">重置表单</button>
+                </div>
+              </form>
+              <p id="enterprise-form-result" class="muted">请先登录后再进行企业信息管理。</p>
+            </section>
+          </section>
+
+          <section id="review-view" class="content-grid app-view hidden">
+            <section class="card review-card">
+              <h2>审核工作台预览</h2>
+              <div class="timeline-list">
+                <article>
+                  <strong>企业填报阶段</strong>
+                  <span>企业完成就业失业数据录入，并按周期提交。</span>
+                </article>
+                <article>
+                  <strong>市级审核阶段</strong>
+                  <span>市级审核员查看待审记录、填写意见并决定通过或退回。</span>
+                </article>
+                <article>
+                  <strong>省级审核阶段</strong>
+                  <span>省级审核员完成终审，并形成最终状态。</span>
+                </article>
+              </div>
+            </section>
+
+            <section class="card review-card">
+              <h2>当前实现说明</h2>
+              <ul>
+                <li>这轮已经完成多角色登录与权限基础，审核流状态字段已纳入后端模型。</li>
+                <li>市级审核、省级审核页面将在后续迭代中承接当前工作台结构继续扩展。</li>
+                <li>手机端适配会沿用当前响应式布局体系，不另起一套页面。</li>
+              </ul>
+            </section>
+          </section>
         </section>
       </main>
     </div>
