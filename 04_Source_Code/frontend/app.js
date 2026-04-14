@@ -15,6 +15,7 @@ const state = {
   unemploymentRecords: [],
   workflowQueue: [],
   currentView: "dashboard",
+  authMode: "login",
 };
 
 const healthStatus = document.querySelector("#health-status");
@@ -24,6 +25,25 @@ const loginResult = document.querySelector("#login-result");
 const logoutButton = document.querySelector("#logout-button");
 const usernameInput = document.querySelector("#username-input");
 const passwordInput = document.querySelector("#password-input");
+const registerForm = document.querySelector("#register-form");
+const registerResult = document.querySelector("#register-result");
+const registerRoleInput = document.querySelector("#register-role-input");
+const registerDisplayNameInput = document.querySelector("#register-display-name-input");
+const registerUsernameInput = document.querySelector("#register-username-input");
+const registerPasswordInput = document.querySelector("#register-password-input");
+const registerOrganizationRow = document.querySelector("#register-organization-row");
+const registerOrganizationLabel = document.querySelector("#register-organization-label");
+const registerOrganizationInput = document.querySelector("#register-organization-input");
+const registerEnterpriseFields = document.querySelector("#register-enterprise-fields");
+const registerEnterpriseNameInput = document.querySelector("#register-enterprise-name-input");
+const registerSocialCreditCodeInput = document.querySelector("#register-social-credit-code-input");
+const registerContactPersonInput = document.querySelector("#register-contact-person-input");
+const registerContactPhoneInput = document.querySelector("#register-contact-phone-input");
+const registerIndustryTypeInput = document.querySelector("#register-industry-type-input");
+const registerCityNameInput = document.querySelector("#register-city-name-input");
+const registerProvinceNameInput = document.querySelector("#register-province-name-input");
+const registerReportingRuleInput = document.querySelector("#register-reporting-rule-input");
+const authModeButtons = document.querySelectorAll(".auth-switch-button");
 const demoAccountList = document.querySelector("#demo-account-list");
 const navButtons = document.querySelectorAll(".nav-button");
 const appViews = document.querySelectorAll(".app-view");
@@ -73,6 +93,67 @@ const unemployedTotal = document.querySelector("#unemployed-total");
 const newHiresTotal = document.querySelector("#new-hires-total");
 const cityPendingCount = document.querySelector("#city-pending-count");
 const provincePendingCount = document.querySelector("#province-pending-count");
+const roleHomeTitle = document.querySelector("#role-home-title");
+const roleHomeCopy = document.querySelector("#role-home-copy");
+const roleTaskList = document.querySelector("#role-task-list");
+
+
+const roleViewMap = {
+  admin: ["dashboard", "enterprises", "reports"],
+  enterprise: ["dashboard", "enterprises", "reports"],
+  city_reviewer: ["dashboard", "review"],
+  province_reviewer: ["dashboard", "review"],
+};
+
+
+const roleHomeMap = {
+  guest: {
+    title: "角色主页说明",
+    copy: "登录后系统将根据身份加载对应功能入口和任务说明。",
+    tasks: [
+      "管理员可查看系统概览并维护企业基础信息。",
+      "企业填报人员可维护企业资料、录入数据并提交审核。",
+      "市级审核人员负责处理企业上报记录的初审。",
+      "省级审核人员负责处理终审和退回意见。",
+    ],
+  },
+  admin: {
+    title: "管理员主页",
+    copy: "管理员负责维护企业基础资料、查看运行概览并保证系统基础信息准确。",
+    tasks: [
+      "查看企业总量、就业总量、失业总量和待审状态概览。",
+      "新增企业档案或维护现有企业基础信息。",
+      "辅助核验企业录入信息是否完整。",
+    ],
+  },
+  enterprise: {
+    title: "企业填报主页",
+    copy: "企业用户负责维护本企业资料、录入就业失业数据并跟踪审核结果。",
+    tasks: [
+      "维护本企业联系人、地区、报送规则等基础信息。",
+      "录入就业与失业数据并保存为草稿。",
+      "查看退回意见后重新提交记录进入审核链路。",
+    ],
+  },
+  city_reviewer: {
+    title: "市级审核主页",
+    copy: "市级审核人员负责对企业上报记录进行初审，并决定是否提交省级复核。",
+    tasks: [
+      "查看待市级审核记录。",
+      "填写审核意见并执行通过或退回。",
+      "跟踪企业重新提交后的审核结果。",
+    ],
+  },
+  province_reviewer: {
+    title: "省级审核主页",
+    copy: "省级审核人员负责终审处理，形成最终通过或退回结果。",
+    tasks: [
+      "查看待省级审核记录。",
+      "执行终审通过或终审退回。",
+      "通过退回意见引导企业补充信息后重新上报。",
+    ],
+  },
+};
 
 
 function getAuthHeaders() {
@@ -122,10 +203,104 @@ function renderDemoAccounts() {
   demoAccountList.querySelectorAll("button[data-account]").forEach((button) => {
     button.addEventListener("click", () => {
       const account = demoAccounts.find((item) => item.username === button.dataset.account);
+      setAuthMode("login");
       usernameInput.value = account.username;
       passwordInput.value = account.password;
     });
   });
+}
+
+
+function setAuthMode(mode) {
+  state.authMode = mode;
+  authModeButtons.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.authMode === mode);
+  });
+  loginForm.classList.toggle("hidden", mode !== "login");
+  loginResult.classList.toggle("hidden", mode !== "login");
+  registerForm.classList.toggle("hidden", mode !== "register");
+  registerResult.classList.toggle("hidden", mode !== "register");
+}
+
+
+function updateRegisterRoleFields() {
+  const role = registerRoleInput.value;
+  const isEnterprise = role === "enterprise";
+
+  registerEnterpriseFields.classList.toggle("hidden", !isEnterprise);
+  registerOrganizationRow.classList.toggle("hidden", isEnterprise);
+
+  if (role === "admin") {
+    registerOrganizationLabel.textContent = "所属管理单位";
+    registerOrganizationInput.placeholder = "例如：省级平台管理中心";
+  } else if (role === "city_reviewer") {
+    registerOrganizationLabel.textContent = "所属市级机构";
+    registerOrganizationInput.placeholder = "例如：昆明市人社局";
+  } else if (role === "province_reviewer") {
+    registerOrganizationLabel.textContent = "所属省级机构";
+    registerOrganizationInput.placeholder = "例如：云南省人社厅";
+  } else {
+    registerOrganizationLabel.textContent = "所属单位";
+    registerOrganizationInput.placeholder = "请输入所属单位或机构";
+  }
+}
+
+
+function updateNavigationByRole() {
+  const allowedViews = state.currentUser ? roleViewMap[state.currentUser.role] || ["dashboard"] : ["dashboard"];
+
+  navButtons.forEach((button) => {
+    button.classList.toggle("hidden", !allowedViews.includes(button.dataset.view));
+  });
+
+  if (!allowedViews.includes(state.currentView)) {
+    setActiveView(allowedViews[0]);
+  }
+}
+
+
+function updateRoleHome() {
+  const key = state.currentUser?.role || "guest";
+  const config = roleHomeMap[key] || roleHomeMap.guest;
+
+  roleHomeTitle.textContent = config.title;
+  roleHomeCopy.textContent = config.copy;
+  roleTaskList.innerHTML = config.tasks.map((task) => `<li>${task}</li>`).join("");
+}
+
+
+function getDefaultViewByRole(role) {
+  if (role === "enterprise") {
+    return "reports";
+  }
+  if (["city_reviewer", "province_reviewer"].includes(role)) {
+    return "review";
+  }
+  return "dashboard";
+}
+
+
+async function applySession(user, message, source = "login") {
+  state.currentUser = user;
+  updateSessionSummary();
+  updateNavigationByRole();
+  updateRoleHome();
+  setActiveView(getDefaultViewByRole(user.role));
+
+  if (source === "register") {
+    registerResult.textContent = message;
+    loginResult.textContent = `${user.display_name} 已登录到系统。`;
+  } else {
+    loginResult.textContent = message;
+  }
+
+  await Promise.all([
+    loadOverview(),
+    loadEnterprises(),
+    loadEmploymentRecords(),
+    loadUnemploymentRecords(),
+    loadWorkflowQueue(),
+  ]);
 }
 
 
@@ -141,7 +316,7 @@ async function loadHealth() {
 
 function updateSessionSummary() {
   if (!state.currentUser) {
-    sessionSummary.textContent = "尚未登录";
+    sessionSummary.textContent = "当前未登录";
     return;
   }
 
@@ -560,25 +735,55 @@ async function handleLogin(event) {
       }),
     });
 
-    state.currentUser = result.user;
-    updateSessionSummary();
-    loginResult.textContent = `${result.message}，当前角色：${result.user.role}`;
-    if (result.user.role === "enterprise") {
-      setActiveView("reports");
-    } else if (["city_reviewer", "province_reviewer"].includes(result.user.role)) {
-      setActiveView("review");
-    } else {
-      setActiveView("dashboard");
-    }
-    await Promise.all([
-      loadOverview(),
-      loadEnterprises(),
-      loadEmploymentRecords(),
-      loadUnemploymentRecords(),
-      loadWorkflowQueue(),
-    ]);
+    await applySession(result.user, `${result.message}，当前角色：${result.user.role}`);
   } catch (error) {
     loginResult.textContent = error.message;
+  }
+}
+
+
+async function handleRegister(event) {
+  event.preventDefault();
+  registerResult.textContent = "正在提交注册信息...";
+
+  const role = registerRoleInput.value;
+  const payload = {
+    username: registerUsernameInput.value.trim(),
+    password: registerPasswordInput.value.trim(),
+    display_name: registerDisplayNameInput.value.trim(),
+    role,
+  };
+
+  if (role === "enterprise") {
+    Object.assign(payload, {
+      enterprise_name: registerEnterpriseNameInput.value.trim(),
+      social_credit_code: registerSocialCreditCodeInput.value.trim(),
+      contact_person: registerContactPersonInput.value.trim(),
+      contact_phone: registerContactPhoneInput.value.trim(),
+      industry_type: registerIndustryTypeInput.value.trim(),
+      city_name: registerCityNameInput.value.trim(),
+      province_name: registerProvinceNameInput.value.trim(),
+      reporting_frequency_rule: registerReportingRuleInput.value,
+    });
+  } else {
+    payload.organization_name = registerOrganizationInput.value.trim();
+  }
+
+  try {
+    const result = await requestJson(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    setAuthMode("login");
+    usernameInput.value = payload.username;
+    passwordInput.value = payload.password;
+    await applySession(result.user, result.message, "register");
+  } catch (error) {
+    registerResult.textContent = error.message;
   }
 }
 
@@ -590,11 +795,14 @@ function handleLogout() {
   state.unemploymentRecords = [];
   state.workflowQueue = [];
   updateSessionSummary();
+  updateNavigationByRole();
+  updateRoleHome();
   renderEnterpriseTable();
   renderRecordTable(employmentTableBody, state.employmentRecords, "employment");
   renderRecordTable(unemploymentTableBody, state.unemploymentRecords, "unemployment");
   renderWorkflowQueue();
   updateEnterpriseFormByRole();
+  setAuthMode("login");
   setActiveView("dashboard");
   loginResult.textContent = "已退出登录。";
 }
@@ -798,7 +1006,11 @@ async function reviewRecord(recordType, recordId, action) {
 
 async function bootstrap() {
   renderDemoAccounts();
+  setAuthMode("login");
+  updateRegisterRoleFields();
   await loadHealth();
+  updateNavigationByRole();
+  updateRoleHome();
   renderEnterpriseTable();
   renderRecordTable(employmentTableBody, state.employmentRecords, "employment");
   renderRecordTable(unemploymentTableBody, state.unemploymentRecords, "unemployment");
@@ -810,7 +1022,12 @@ async function bootstrap() {
 
 
 loginForm.addEventListener("submit", handleLogin);
+registerForm.addEventListener("submit", handleRegister);
 logoutButton.addEventListener("click", handleLogout);
+registerRoleInput.addEventListener("change", updateRegisterRoleFields);
+authModeButtons.forEach((button) => {
+  button.addEventListener("click", () => setAuthMode(button.dataset.authMode));
+});
 refreshButton.addEventListener("click", async () => {
   await Promise.all([loadOverview(), loadEnterprises()]);
 });

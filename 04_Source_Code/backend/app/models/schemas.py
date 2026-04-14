@@ -6,6 +6,22 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=6, max_length=50)
 
 
+class RegisterRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6, max_length=50)
+    display_name: str = Field(..., min_length=2, max_length=50)
+    role: str = Field(..., min_length=4, max_length=30)
+    organization_name: str | None = Field(default=None, min_length=2, max_length=100)
+    enterprise_name: str | None = Field(default=None, min_length=2, max_length=100)
+    social_credit_code: str | None = Field(default=None, min_length=6, max_length=30)
+    contact_person: str | None = Field(default=None, min_length=2, max_length=50)
+    contact_phone: str | None = Field(default=None, min_length=6, max_length=20)
+    industry_type: str | None = Field(default="综合服务", min_length=2, max_length=50)
+    city_name: str | None = Field(default="昆明市", min_length=2, max_length=50)
+    province_name: str | None = Field(default="云南省", min_length=2, max_length=50)
+    reporting_frequency_rule: str | None = Field(default="Q1_HALF_MONTH_OTHER_MONTHLY", min_length=3, max_length=50)
+
+
 class UserProfile(BaseModel):
     id: int
     username: str

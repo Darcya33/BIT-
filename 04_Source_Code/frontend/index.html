@@ -8,19 +8,20 @@
   </head>
   <body>
     <div class="page-shell">
-      <header class="hero">
-        <div>
-          <p class="eyebrow">Week 2 Implementation</p>
+      <header class="system-header">
+        <div class="system-header-main card">
+          <p class="eyebrow">云南省公共就业数据平台</p>
           <h1>云南省企业就业失业数据采集系统</h1>
           <p class="hero-copy">
-            当前已切换到 v0.3 计划节奏。这个版本开始实现多角色登录、企业信息管理、就业失业填报、企业上报与市级审核第一页。
+            面向企业填报、市级审核、省级审核和系统管理的就业失业数据采集平台。
+            当前版本聚焦企业填报、逐级审核、统计概览与过程留痕四类核心能力。
           </p>
         </div>
-        <div class="hero-panel">
-          <div class="panel-label">当前阶段</div>
-          <strong>Week 2 / 填报与上报流转</strong>
+        <div class="status-panel">
+          <div class="panel-label">系统状态</div>
+          <strong>课程作业演示版</strong>
           <span id="health-status">正在检查后端状态...</span>
-          <span id="session-summary">尚未登录</span>
+          <span id="session-summary">当前未登录</span>
         </div>
       </header>
 
@@ -28,7 +29,7 @@
         <aside class="sidebar card">
           <div class="sidebar-head">
             <h2>工作台导航</h2>
-            <p class="muted">登录后按角色展示可操作视图</p>
+            <p class="muted">根据当前身份显示可用功能模块</p>
           </div>
           <div class="nav-list">
             <button class="nav-button is-active" data-view="dashboard">项目总览</button>
@@ -37,25 +38,31 @@
             <button class="nav-button" data-view="review">审核工作台</button>
           </div>
           <div class="card sidebar-note">
-            <div class="panel-label">报表规则</div>
+            <div class="panel-label">业务规则</div>
             <ul>
               <li>1 至 3 月采用半月报。</li>
               <li>4 至 12 月采用整月报。</li>
-              <li>当前版本已在后端模型中预留周期与审核状态字段。</li>
+              <li>企业先保存草稿，再进入市级和省级审核流程。</li>
             </ul>
           </div>
         </aside>
 
         <section class="main-panel">
           <section class="content-grid auth-grid">
-            <section class="card login-card">
+            <section class="card auth-portal-card">
               <div class="section-head compact">
                 <div>
-                  <h2>登录系统</h2>
-                  <p class="muted">当前演示的是多角色登录与权限分流的第一版。</p>
+                  <h2>统一认证入口</h2>
+                  <p class="muted">不同身份使用相同入口登录或注册，系统按身份加载对应主页和功能。</p>
                 </div>
               </div>
-              <form id="login-form" class="form-grid">
+
+              <div class="auth-switcher">
+                <button id="auth-mode-login" type="button" class="auth-switch-button is-active" data-auth-mode="login">登录</button>
+                <button id="auth-mode-register" type="button" class="auth-switch-button" data-auth-mode="register">注册</button>
+              </div>
+
+              <form id="login-form" class="form-grid auth-form">
                 <label>
                   <span>用户名</span>
                   <input id="username-input" name="username" type="text" value="admin" required />
@@ -69,11 +76,84 @@
                   <button id="logout-button" type="button" class="ghost-button">退出登录</button>
                 </div>
               </form>
-              <p id="login-result" class="muted">尚未调用登录接口</p>
+              <p id="login-result" class="muted">请选择账号登录，系统将自动进入对应身份主页。</p>
+
+              <form id="register-form" class="form-grid two-column auth-form hidden">
+                <label>
+                  <span>注册身份</span>
+                  <select id="register-role-input">
+                    <option value="enterprise">企业填报人员</option>
+                    <option value="city_reviewer">市级审核人员</option>
+                    <option value="province_reviewer">省级审核人员</option>
+                    <option value="admin">系统管理员</option>
+                  </select>
+                </label>
+                <label>
+                  <span>姓名</span>
+                  <input id="register-display-name-input" type="text" placeholder="请输入真实姓名" required />
+                </label>
+                <label>
+                  <span>用户名</span>
+                  <input id="register-username-input" type="text" placeholder="用于登录系统" required />
+                </label>
+                <label>
+                  <span>密码</span>
+                  <input id="register-password-input" type="password" placeholder="不少于 6 位" required />
+                </label>
+
+                <label id="register-organization-row" class="full-row">
+                  <span id="register-organization-label">所属单位</span>
+                  <input id="register-organization-input" type="text" placeholder="请输入所属单位或机构" />
+                </label>
+
+                <div id="register-enterprise-fields" class="register-enterprise-grid full-row hidden">
+                  <label>
+                    <span>企业名称</span>
+                    <input id="register-enterprise-name-input" type="text" placeholder="请输入企业名称" />
+                  </label>
+                  <label>
+                    <span>统一社会信用代码</span>
+                    <input id="register-social-credit-code-input" type="text" placeholder="请输入统一社会信用代码" />
+                  </label>
+                  <label>
+                    <span>联系人</span>
+                    <input id="register-contact-person-input" type="text" placeholder="请输入联系人姓名" />
+                  </label>
+                  <label>
+                    <span>联系电话</span>
+                    <input id="register-contact-phone-input" type="text" placeholder="请输入联系电话" />
+                  </label>
+                  <label>
+                    <span>行业类型</span>
+                    <input id="register-industry-type-input" type="text" value="数字服务" />
+                  </label>
+                  <label>
+                    <span>城市</span>
+                    <input id="register-city-name-input" type="text" value="昆明市" />
+                  </label>
+                  <label>
+                    <span>省份</span>
+                    <input id="register-province-name-input" type="text" value="云南省" />
+                  </label>
+                  <label>
+                    <span>报送规则</span>
+                    <select id="register-reporting-rule-input">
+                      <option value="Q1_HALF_MONTH_OTHER_MONTHLY">一季度半月报，其余月份整月报</option>
+                      <option value="MONTHLY_ONLY">整月报</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="button-row full-row">
+                  <button id="register-button" type="submit">注册并进入系统</button>
+                </div>
+              </form>
+              <p id="register-result" class="muted hidden">请先选择注册身份并填写对应信息。</p>
             </section>
 
             <section class="card account-card">
-              <h2>演示账号</h2>
+              <h2>角色入口说明</h2>
+              <p class="muted">当前系统按角色进入不同主页。演示账号可直接体验对应身份功能。</p>
               <div id="demo-account-list" class="account-list"></div>
             </section>
           </section>
@@ -110,12 +190,13 @@
             </section>
 
             <section class="card notes-card">
-              <h2>本周实现重点</h2>
-              <ul>
-                <li>登录后根据角色切换工作台内容，支持企业、市级、省级、管理员四类用户。</li>
-                <li>企业信息管理进入第一版可用状态，管理员可新增，企业用户可维护本企业信息。</li>
-                <li>就业与失业记录已支持草稿、提交、市级待审等状态流转。</li>
-                <li>后端数据模型已支持半月报规则校验和市级审核工作队列。</li>
+              <h2 id="role-home-title">角色主页说明</h2>
+              <p id="role-home-copy" class="muted">登录后系统将根据身份加载对应功能入口和任务说明。</p>
+              <ul id="role-task-list">
+                <li>管理员可查看系统概览并维护企业基础信息。</li>
+                <li>企业填报人员可维护企业资料、录入数据并提交审核。</li>
+                <li>市级审核人员负责处理企业上报记录的初审。</li>
+                <li>省级审核人员负责处理终审和退回意见。</li>
               </ul>
             </section>
           </section>
@@ -377,7 +458,7 @@
             </section>
 
             <section class="card review-card">
-              <h2>当前实现说明</h2>
+              <h2>审核工作说明</h2>
               <ul>
                 <li>企业当前可先保存就业和失业草稿，再逐条提交到市级审核队列。</li>
                 <li>市级审核员已可以看到待审记录，并执行通过或退回动作。</li>

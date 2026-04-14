@@ -1,15 +1,15 @@
 :root {
   color-scheme: light;
-  --bg: #f4f1e8;
-  --surface: rgba(255, 252, 245, 0.92);
-  --surface-strong: #fffdf7;
-  --line: rgba(78, 58, 39, 0.12);
-  --text: #2d241d;
-  --muted: #6f6254;
-  --accent: #006d5b;
-  --accent-2: #d86b1f;
-  --accent-3: #124b73;
-  --shadow: 0 18px 50px rgba(69, 47, 27, 0.12);
+  --bg: #eef3f8;
+  --surface: rgba(255, 255, 255, 0.96);
+  --surface-strong: #ffffff;
+  --line: rgba(28, 61, 96, 0.14);
+  --text: #1d2b36;
+  --muted: #5d6b78;
+  --accent: #0f4c81;
+  --accent-2: #2e6f95;
+  --accent-3: #0c385f;
+  --shadow: 0 10px 28px rgba(20, 47, 77, 0.08);
 }
 
 * {
@@ -20,9 +20,7 @@ body {
   margin: 0;
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
   background:
-    radial-gradient(circle at top right, rgba(216, 107, 31, 0.16), transparent 28%),
-    radial-gradient(circle at left bottom, rgba(0, 109, 91, 0.18), transparent 32%),
-    linear-gradient(160deg, #f6f1e3 0%, #efe5d0 100%);
+    linear-gradient(180deg, #f5f8fb 0%, #ecf1f6 100%);
   color: var(--text);
 }
 
@@ -32,12 +30,18 @@ body {
   padding: 32px 20px 48px;
 }
 
-.hero {
+.system-header {
   display: grid;
   grid-template-columns: 1.8fr 1fr;
   gap: 20px;
   align-items: stretch;
   margin-bottom: 24px;
+}
+
+.system-header-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .eyebrow {
@@ -72,30 +76,35 @@ span {
   display: none !important;
 }
 
-.hero-panel,
+.status-panel,
 .card {
   border: 1px solid var(--line);
   background: var(--surface);
-  backdrop-filter: blur(12px);
-  border-radius: 24px;
+  border-radius: 16px;
   box-shadow: var(--shadow);
 }
 
-.hero-panel {
+.status-panel {
   padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 12px;
-  background: linear-gradient(180deg, #fffdf7 0%, #f7efe5 100%);
+  background: linear-gradient(180deg, #173d67 0%, #0f4c81 100%);
+  color: #fff;
 }
 
 .panel-label {
   font-size: 12px;
   font-weight: 700;
-  color: var(--accent-2);
+  color: #cfe4f6;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+
+.status-panel span,
+.status-panel strong {
+  color: #fff;
 }
 
 .content-grid {
@@ -133,20 +142,21 @@ span {
   width: 100%;
   justify-content: flex-start;
   text-align: left;
-  background: linear-gradient(135deg, rgba(0, 109, 91, 0.12) 0%, rgba(15, 139, 117, 0.18) 100%);
+  background: #eef4f9;
   color: var(--text);
   box-shadow: none;
+  border-radius: 12px;
 }
 
 .nav-button.is-active {
-  background: linear-gradient(135deg, var(--accent) 0%, #0f8b75 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
   color: #fff;
 }
 
 .sidebar-note {
   padding: 18px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(18, 75, 115, 0.08) 0%, rgba(255, 255, 255, 0.72) 100%);
+  border-radius: 12px;
+  background: #f6f9fc;
 }
 
 .main-panel {
@@ -160,6 +170,40 @@ span {
 
 .card {
   padding: 24px;
+}
+
+.auth-portal-card {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-switcher {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 14px;
+  background: #edf3f8;
+  width: fit-content;
+}
+
+.auth-switch-button {
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+
+.auth-switch-button.is-active {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(15, 76, 129, 0.16);
+}
+
+.register-enterprise-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .table-card,
@@ -181,7 +225,7 @@ span {
 
 .account-item {
   padding: 16px;
-  border-radius: 18px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--surface-strong);
 }
@@ -216,17 +260,17 @@ span {
 input,
 select {
   width: 100%;
-  border: 1px solid rgba(78, 58, 39, 0.18);
-  border-radius: 14px;
+  border: 1px solid rgba(28, 61, 96, 0.18);
+  border-radius: 10px;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.9);
+  background: #fff;
   color: var(--text);
   font: inherit;
 }
 
 input:focus,
 select:focus {
-  outline: 2px solid rgba(0, 109, 91, 0.2);
+  outline: 2px solid rgba(15, 76, 129, 0.16);
   border-color: var(--accent);
 }
 
@@ -237,30 +281,30 @@ select:focus {
 }
 
 .ghost-button {
-  background: rgba(18, 75, 115, 0.08);
+  background: rgba(15, 76, 129, 0.08);
   color: var(--accent-3);
   box-shadow: none;
 }
 
 .field-note {
   padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(0, 109, 91, 0.08);
+  border-radius: 10px;
+  background: rgba(15, 76, 129, 0.08);
   color: var(--accent);
   font-size: 14px;
 }
 
 button {
   border: 0;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent) 0%, #0f8b75 100%);
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
   color: #fff;
   padding: 12px 18px;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease;
-  box-shadow: 0 12px 24px rgba(0, 109, 91, 0.2);
+  box-shadow: 0 10px 20px rgba(15, 76, 129, 0.14);
 }
 
 button:hover {
@@ -279,7 +323,7 @@ button:hover {
 
 .stats-grid article {
   padding: 18px;
-  border-radius: 18px;
+  border-radius: 12px;
   background: var(--surface-strong);
   border: 1px solid var(--line);
 }
@@ -310,7 +354,7 @@ button:hover {
 
 .timeline-list article {
   padding: 16px;
-  border-radius: 18px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--surface-strong);
 }
@@ -339,7 +383,7 @@ button:hover {
   padding: 6px 10px;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(216, 107, 31, 0.12);
+  background: rgba(46, 111, 149, 0.12);
   color: var(--accent-2);
 }
 
@@ -352,7 +396,7 @@ table {
 }
 
 thead {
-  background: rgba(0, 109, 91, 0.08);
+  background: rgba(15, 76, 129, 0.08);
 }
 
 th,
@@ -368,12 +412,13 @@ ul {
 }
 
 @media (max-width: 900px) {
-  .hero,
+  .system-header,
   .content-grid,
   .workspace,
   .auth-grid,
   .form-grid.two-column,
-  .stats-grid-six {
+  .stats-grid-six,
+  .register-enterprise-grid {
     grid-template-columns: 1fr;
   }
 
