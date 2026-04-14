@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>云南省企业就业失业数据采集系统</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Course Project MVP</p>
+          <h1>云南省企业就业失业数据采集系统</h1>
+          <p class="hero-copy">
+            第 3 天已完成系统骨架搭建。当前页面用于展示后端接口联通状态、基础统计卡片和样例企业数据。
+          </p>
+        </div>
+        <div class="hero-panel">
+          <div class="panel-label">当前阶段</div>
+          <strong>Day 3 / 系统骨架完成</strong>
+          <span id="health-status">正在检查后端状态...</span>
+        </div>
+      </header>
+
+      <main class="content-grid">
+        <section class="card login-card">
+          <h2>默认演示账号</h2>
+          <div class="credentials">
+            <span>用户名：admin</span>
+            <span>密码：admin123</span>
+          </div>
+          <button id="login-button" type="button">验证登录接口</button>
+          <p id="login-result" class="muted">尚未调用登录接口</p>
+        </section>
+
+        <section class="card stats-card">
+          <h2>基础统计概览</h2>
+          <div class="stats-grid">
+            <article>
+              <span>企业数量</span>
+              <strong id="enterprise-count">-</strong>
+            </article>
+            <article>
+              <span>就业总人数</span>
+              <strong id="employed-total">-</strong>
+            </article>
+            <article>
+              <span>失业总人数</span>
+              <strong id="unemployed-total">-</strong>
+            </article>
+            <article>
+              <span>新增就业</span>
+              <strong id="new-hires-total">-</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="card table-card">
+          <div class="section-head">
+            <h2>企业样例数据</h2>
+            <button id="refresh-button" type="button">刷新数据</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>企业名称</th>
+                <th>统一社会信用代码</th>
+                <th>联系人</th>
+                <th>联系电话</th>
+              </tr>
+            </thead>
+            <tbody id="enterprise-table-body">
+              <tr>
+                <td colspan="5">正在加载数据...</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card notes-card">
+          <h2>第 3 天交付说明</h2>
+          <ul>
+            <li>后端已搭建 FastAPI 应用骨架并划分认证、企业、就业、失业、统计五类路由。</li>
+            <li>SQLite 数据库已初始化，内置一组演示数据用于后续前后端联调。</li>
+            <li>前端已完成首页框架，可直接连接后端接口显示统计与企业列表。</li>
+            <li>后续第 4 到第 8 天将在该骨架上逐步补齐登录、CRUD、查询与导出功能。</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+  </html>

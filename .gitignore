@@ -51,3 +51,5 @@ venv/
 *.tmp
 *.temp
 .cache/
+*.db
+
