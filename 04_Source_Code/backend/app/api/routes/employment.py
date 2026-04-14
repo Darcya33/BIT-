@@ -15,7 +15,8 @@ def list_employment_records(current_user: dict = Depends(get_current_user)) -> l
     params: tuple = ()
     query = """
         SELECT er.id, er.report_type, er.report_period, er.employed_count, er.new_hires,
-               er.workflow_status, e.name AS enterprise_name
+               er.workflow_status, er.city_review_comment, er.province_review_comment,
+               e.name AS enterprise_name
         FROM employment_records er
         JOIN enterprises e ON e.id = er.enterprise_id
     """

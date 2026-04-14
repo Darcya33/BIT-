@@ -344,19 +344,22 @@ function renderEnterpriseTable() {
 
 function renderRecordTable(tableBody, records, recordType) {
   if (!state.currentUser) {
-    tableBody.innerHTML = '<tr><td colspan="7">请先登录后再查看记录。</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="8">请先登录后再查看记录。</td></tr>';
     return;
   }
 
   if (!records.length) {
-    tableBody.innerHTML = '<tr><td colspan="7">暂无记录</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="8">暂无记录</td></tr>';
     return;
   }
 
   tableBody.innerHTML = records
     .map((record) => {
+      const latestComment = record.province_review_comment || record.city_review_comment || "-";
       const submitButton = ["draft", "city_rejected"].includes(record.workflow_status) && ["enterprise", "admin"].includes(state.currentUser.role)
-        ? `<button type="button" data-submit-type="${recordType}" data-submit-id="${record.id}">提交上报</button>`
+        ? `<button type="button" data-submit-type="${recordType}" data-submit-id="${record.id}">${record.workflow_status === "draft" ? "提交上报" : "重新提交"}</button>`
+        : record.workflow_status === "province_rejected" && ["enterprise", "admin"].includes(state.currentUser.role)
+          ? `<button type="button" data-submit-type="${recordType}" data-submit-id="${record.id}">重新提交</button>`
         : '<span class="badge">已提交或只读</span>';
 
       return `
@@ -367,6 +370,7 @@ function renderRecordTable(tableBody, records, recordType) {
           <td>${recordType === "employment" ? record.employed_count : record.unemployed_count}</td>
           <td>${recordType === "employment" ? record.new_hires : record.layoffs}</td>
           <td>${mapStatusLabel(record.workflow_status)}</td>
+          <td>${latestComment}</td>
           <td><div class="table-actions">${submitButton}</div></td>
         </tr>
       `;
@@ -394,10 +398,12 @@ function renderWorkflowQueue() {
     .map((record) => {
       let actionHtml = '<span class="badge">查看中</span>';
       if (["city_reviewer", "province_reviewer"].includes(state.currentUser.role)) {
+        const approveLabel = state.currentUser.role === "province_reviewer" ? "终审通过" : "通过";
+        const rejectLabel = state.currentUser.role === "province_reviewer" ? "终审退回" : "退回";
         actionHtml = `
           <div class="table-actions">
-            <button type="button" data-review-action="approve" data-review-type="${record.record_type}" data-review-id="${record.id}">通过</button>
-            <button type="button" class="ghost-button" data-review-action="reject" data-review-type="${record.record_type}" data-review-id="${record.id}">退回</button>
+            <button type="button" data-review-action="approve" data-review-type="${record.record_type}" data-review-id="${record.id}">${approveLabel}</button>
+            <button type="button" class="ghost-button" data-review-action="reject" data-review-type="${record.record_type}" data-review-id="${record.id}">${rejectLabel}</button>
           </div>
         `;
       }
@@ -753,7 +759,12 @@ async function submitRecord(recordType, recordId) {
 
 
 async function reviewRecord(recordType, recordId, action) {
-  const comment = window.prompt(action === "approve" ? "请输入审核通过意见" : "请输入退回原因", action === "approve" ? "审核通过" : "请补充后重新提交");
+  const isProvince = state.currentUser?.role === "province_reviewer";
+  const approvePrompt = isProvince ? "请输入终审通过意见" : "请输入审核通过意见";
+  const rejectPrompt = isProvince ? "请输入省级退回原因" : "请输入市级退回原因";
+  const approveDefault = isProvince ? "终审通过" : "审核通过";
+  const rejectDefault = isProvince ? "请根据省级意见修改后重新提交" : "请补充后重新提交";
+  const comment = window.prompt(action === "approve" ? approvePrompt : rejectPrompt, action === "approve" ? approveDefault : rejectDefault);
   if (!comment) {
     return;
   }

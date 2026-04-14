@@ -94,7 +94,7 @@ def submit_record(
 
     ensure_transition(
         row["workflow_status"],
-        {"draft", "city_rejected"},
+        {"draft", "city_rejected", "province_rejected"},
         "当前记录状态不允许再次提交",
     )
 

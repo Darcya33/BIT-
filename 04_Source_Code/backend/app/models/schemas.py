@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LoginRequest(BaseModel):
@@ -78,7 +78,9 @@ class WorkflowSubmitRequest(BaseModel):
 
 
 class WorkflowReviewRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     record_type: str = Field(..., min_length=5, max_length=20)
     record_id: int = Field(..., ge=1)
     action: str = Field(..., min_length=6, max_length=20)
-    review_comment: str = Field(..., min_length=2, max_length=200)
+    review_comment: str = Field(..., alias="comment", min_length=2, max_length=200)

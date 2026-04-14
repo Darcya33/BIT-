@@ -129,6 +129,7 @@
                 </div>
                 <button id="refresh-button" type="button">刷新企业数据</button>
               </div>
+              <div class="table-wrapper">
               <table>
                 <thead>
                   <tr>
@@ -147,6 +148,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </section>
 
             <section class="card enterprise-form-card">
@@ -289,6 +291,7 @@
                 </div>
                 <button id="refresh-records-button" type="button">刷新记录</button>
               </div>
+              <div class="table-wrapper">
               <table>
                 <thead>
                   <tr>
@@ -298,15 +301,17 @@
                     <th>在岗人数</th>
                     <th>新增就业</th>
                     <th>状态</th>
+                    <th>审核意见</th>
                     <th>操作</th>
                   </tr>
                 </thead>
                 <tbody id="employment-table-body">
                   <tr>
-                    <td colspan="7">登录后加载就业记录...</td>
+                    <td colspan="8">登录后加载就业记录...</td>
                   </tr>
                 </tbody>
               </table>
+              </div>
             </section>
 
             <section class="card table-card">
@@ -316,6 +321,7 @@
                   <p class="muted">市级审核会基于这里的上报结果进行处理。</p>
                 </div>
               </div>
+              <div class="table-wrapper">
               <table>
                 <thead>
                   <tr>
@@ -325,15 +331,17 @@
                     <th>失业人数</th>
                     <th>裁员人数</th>
                     <th>状态</th>
+                    <th>审核意见</th>
                     <th>操作</th>
                   </tr>
                 </thead>
                 <tbody id="unemployment-table-body">
                   <tr>
-                    <td colspan="7">登录后加载失业记录...</td>
+                    <td colspan="8">登录后加载失业记录...</td>
                   </tr>
                 </tbody>
               </table>
+              </div>
             </section>
           </section>
 
@@ -342,10 +350,11 @@
               <div class="section-head">
                 <div>
                   <h2>审核队列</h2>
-                  <p class="muted">市级审核员处理 city_pending，省级审核员处理 province_pending。</p>
+                  <p class="muted">市级审核员处理 city_pending，省级审核员处理 province_pending，企业可根据退回意见重新提交。</p>
                 </div>
                 <button id="refresh-review-button" type="button">刷新审核队列</button>
               </div>
+              <div class="table-wrapper">
               <table>
                 <thead>
                   <tr>
@@ -364,6 +373,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </section>
 
             <section class="card review-card">
@@ -371,7 +381,7 @@
               <ul>
                 <li>企业当前可先保存就业和失业草稿，再逐条提交到市级审核队列。</li>
                 <li>市级审核员已可以看到待审记录，并执行通过或退回动作。</li>
-                <li>省级审核流接口已经预留，后续将在当前页面继续扩展终审处理。</li>
+                <li>省级审核员已可以处理市级通过后的待审记录，并形成终审通过或省级退回。</li>
               </ul>
             </section>
           </section>
