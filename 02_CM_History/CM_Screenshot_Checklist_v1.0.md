@@ -23,10 +23,11 @@
 ### B. 项目计划与变更控制截图
 
 1. Project_Plan_v0.3 文档打开截图。
-2. Gantt_Task_Table_v0.3 表格截图。
-3. CR-001 文档截图。
-4. CR-002 文档截图。
-5. Iteration_Adjustment_Analysis_v0.1 文档截图。
+2. Project_Plan_Final_v1.0 文档截图。
+3. Gantt_Task_Table_v0.3 表格截图。
+4. CR-001 文档截图。
+5. CR-002 文档截图。
+6. Iteration_Adjustment_Analysis_v0.1 文档截图。
 
 ### C. 系统运行截图
 
@@ -46,14 +47,15 @@
 
 - CM-01_GitHub_History.png
 - CM-02_Project_Plan_v03.png
-- CM-03_CR001.png
-- CM-04_CR002.png
-- CM-05_Admin_Dashboard.png
-- CM-06_Enterprise_Report_Form.png
-- CM-07_City_Review.png
-- CM-08_Province_Review.png
-- CM-09_Rejected_Record.png
-- CM-10_Mobile_View.png
+- CM-03_Project_Plan_Final.png
+- CM-04_CR001.png
+- CM-05_CR002.png
+- CM-06_Admin_Dashboard.png
+- CM-07_Enterprise_Report_Form.png
+- CM-08_City_Review.png
+- CM-09_Province_Review.png
+- CM-10_Rejected_Record.png
+- CM-11_Mobile_View.png
 
 ## 4. 存放建议
 
