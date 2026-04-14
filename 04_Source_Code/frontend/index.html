@@ -35,6 +35,7 @@
             <button class="nav-button is-active" data-view="dashboard">项目总览</button>
             <button class="nav-button" data-view="enterprises">企业管理</button>
             <button class="nav-button" data-view="reports">就业失业填报</button>
+            <button class="nav-button" data-view="analysis">查询统计</button>
             <button class="nav-button" data-view="review">审核工作台</button>
           </div>
           <div class="card sidebar-note">
@@ -464,6 +465,133 @@
                 <li>市级审核员已可以看到待审记录，并执行通过或退回动作。</li>
                 <li>省级审核员已可以处理市级通过后的待审记录，并形成终审通过或省级退回。</li>
               </ul>
+            </section>
+          </section>
+
+          <section id="analysis-view" class="content-grid app-view hidden">
+            <section class="card stats-card">
+              <div class="section-head">
+                <div>
+                  <h2>查询统计</h2>
+                  <p class="muted">查看当前身份可见的数据总览、状态分布和审核时间线。</p>
+                </div>
+                <button id="refresh-analysis-button" type="button">刷新统计</button>
+              </div>
+              <div class="stats-grid stats-grid-six">
+                <article>
+                  <span>记录总数</span>
+                  <strong id="analysis-total-records">-</strong>
+                </article>
+                <article>
+                  <span>草稿记录</span>
+                  <strong id="analysis-draft-count">-</strong>
+                </article>
+                <article>
+                  <span>已通过记录</span>
+                  <strong id="analysis-approved-count">-</strong>
+                </article>
+                <article>
+                  <span>退回记录</span>
+                  <strong id="analysis-rejected-count">-</strong>
+                </article>
+                <article>
+                  <span>半月报记录</span>
+                  <strong id="analysis-half-month-count">-</strong>
+                </article>
+                <article>
+                  <span>整月报记录</span>
+                  <strong id="analysis-monthly-count">-</strong>
+                </article>
+              </div>
+            </section>
+
+            <section class="card report-form-card">
+              <div class="section-head compact">
+                <div>
+                  <h2>查询条件</h2>
+                  <p class="muted">支持按记录类型、状态、周期和企业名称进行筛选，并导出当前结果。</p>
+                </div>
+              </div>
+              <form id="analysis-filter-form" class="form-grid two-column">
+                <label>
+                  <span>记录类型</span>
+                  <select id="analysis-record-type-filter">
+                    <option value="all">全部</option>
+                    <option value="employment">就业</option>
+                    <option value="unemployment">失业</option>
+                  </select>
+                </label>
+                <label>
+                  <span>状态</span>
+                  <select id="analysis-status-filter">
+                    <option value="all">全部</option>
+                    <option value="draft">草稿</option>
+                    <option value="city_pending">待市级审核</option>
+                    <option value="city_rejected">市级退回</option>
+                    <option value="province_pending">待省级审核</option>
+                    <option value="province_rejected">省级退回</option>
+                    <option value="approved">审核通过</option>
+                  </select>
+                </label>
+                <label>
+                  <span>周期关键字</span>
+                  <input id="analysis-period-filter" type="text" placeholder="例如 2026-04 或 H1" />
+                </label>
+                <label>
+                  <span>企业名称关键字</span>
+                  <input id="analysis-enterprise-filter" type="text" placeholder="请输入企业名称" />
+                </label>
+                <div class="button-row full-row">
+                  <button type="submit">应用筛选</button>
+                  <button id="reset-analysis-filter-button" type="button" class="ghost-button">重置条件</button>
+                  <button id="export-analysis-button" type="button" class="ghost-button">导出当前结果</button>
+                </div>
+              </form>
+              <p id="analysis-filter-result" class="muted">登录后可筛选当前身份可见的业务记录。</p>
+            </section>
+
+            <section class="card table-card">
+              <div class="section-head">
+                <div>
+                  <h2>查询结果</h2>
+                  <p class="muted">结果列表按当前筛选条件动态更新。</p>
+                </div>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>类型</th>
+                      <th>企业</th>
+                      <th>周期</th>
+                      <th>主值</th>
+                      <th>补充值</th>
+                      <th>状态</th>
+                      <th>审核意见</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analysis-table-body">
+                    <tr>
+                      <td colspan="7">登录后加载查询结果...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="card notes-card">
+              <div class="section-head compact">
+                <div>
+                  <h2>审核时间线</h2>
+                  <p class="muted">展示最近发生的提交、审核与终审记录，便于说明流程留痕。</p>
+                </div>
+              </div>
+              <div id="analysis-timeline-list" class="timeline-list">
+                <article>
+                  <strong>暂无时间线数据</strong>
+                  <p class="muted">登录后可查看当前身份相关的审核时间线。</p>
+                </article>
+              </div>
             </section>
           </section>
         </section>

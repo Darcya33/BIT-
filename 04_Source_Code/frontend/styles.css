@@ -435,6 +435,10 @@ ul {
   .nav-button {
     min-width: 150px;
   }
+
+  .status-panel {
+    padding: 20px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -449,5 +453,22 @@ ul {
   .section-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .auth-switcher {
+    width: 100%;
+  }
+
+  .auth-switch-button,
+  .button-row button {
+    flex: 1 1 100%;
+  }
+
+  .table-wrapper {
+    margin: 0 -4px;
+  }
+
+  .timeline-list article {
+    padding: 14px;
   }
 }

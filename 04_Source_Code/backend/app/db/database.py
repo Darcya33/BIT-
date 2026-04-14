@@ -68,6 +68,8 @@ def init_db() -> None:
             province_review_comment TEXT DEFAULT '',
             submitted_by INTEGER,
             submitted_at TEXT,
+            city_reviewed_at TEXT,
+            province_reviewed_at TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (enterprise_id) REFERENCES enterprises(id)
         );
@@ -84,6 +86,8 @@ def init_db() -> None:
             province_review_comment TEXT DEFAULT '',
             submitted_by INTEGER,
             submitted_at TEXT,
+            city_reviewed_at TEXT,
+            province_reviewed_at TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (enterprise_id) REFERENCES enterprises(id)
         );
@@ -106,6 +110,8 @@ def init_db() -> None:
     ensure_column(connection, "employment_records", "province_review_comment", "TEXT DEFAULT ''")
     ensure_column(connection, "employment_records", "submitted_by", "INTEGER")
     ensure_column(connection, "employment_records", "submitted_at", "TEXT")
+    ensure_column(connection, "employment_records", "city_reviewed_at", "TEXT")
+    ensure_column(connection, "employment_records", "province_reviewed_at", "TEXT")
 
     ensure_column(connection, "unemployment_records", "report_type", "TEXT DEFAULT 'monthly'")
     ensure_column(connection, "unemployment_records", "report_period", "TEXT DEFAULT ''")
@@ -114,6 +120,8 @@ def init_db() -> None:
     ensure_column(connection, "unemployment_records", "province_review_comment", "TEXT DEFAULT ''")
     ensure_column(connection, "unemployment_records", "submitted_by", "INTEGER")
     ensure_column(connection, "unemployment_records", "submitted_at", "TEXT")
+    ensure_column(connection, "unemployment_records", "city_reviewed_at", "TEXT")
+    ensure_column(connection, "unemployment_records", "province_reviewed_at", "TEXT")
 
     cursor.execute(
         """

@@ -42,3 +42,54 @@ def overview(_: dict = Depends(get_current_user)) -> dict:
         "cityPendingCount": city_pending_count,
         "provincePendingCount": province_pending_count,
     }
+
+
+@router.get("/analysis")
+def analysis(_: dict = Depends(get_current_user)) -> dict:
+    connection = get_connection()
+
+    draft_count = connection.execute(
+        "SELECT COUNT(*) FROM employment_records WHERE workflow_status = 'draft'"
+    ).fetchone()[0] + connection.execute(
+        "SELECT COUNT(*) FROM unemployment_records WHERE workflow_status = 'draft'"
+    ).fetchone()[0]
+
+    approved_count = connection.execute(
+        "SELECT COUNT(*) FROM employment_records WHERE workflow_status = 'approved'"
+    ).fetchone()[0] + connection.execute(
+        "SELECT COUNT(*) FROM unemployment_records WHERE workflow_status = 'approved'"
+    ).fetchone()[0]
+
+    rejected_count = connection.execute(
+        "SELECT COUNT(*) FROM employment_records WHERE workflow_status IN ('city_rejected', 'province_rejected')"
+    ).fetchone()[0] + connection.execute(
+        "SELECT COUNT(*) FROM unemployment_records WHERE workflow_status IN ('city_rejected', 'province_rejected')"
+    ).fetchone()[0]
+
+    half_month_count = connection.execute(
+        "SELECT COUNT(*) FROM employment_records WHERE report_type = 'half_month'"
+    ).fetchone()[0] + connection.execute(
+        "SELECT COUNT(*) FROM unemployment_records WHERE report_type = 'half_month'"
+    ).fetchone()[0]
+
+    monthly_count = connection.execute(
+        "SELECT COUNT(*) FROM employment_records WHERE report_type = 'monthly'"
+    ).fetchone()[0] + connection.execute(
+        "SELECT COUNT(*) FROM unemployment_records WHERE report_type = 'monthly'"
+    ).fetchone()[0]
+
+    employment_record_count = connection.execute("SELECT COUNT(*) FROM employment_records").fetchone()[0]
+    unemployment_record_count = connection.execute("SELECT COUNT(*) FROM unemployment_records").fetchone()[0]
+
+    connection.close()
+
+    return {
+        "draftCount": draft_count,
+        "approvedCount": approved_count,
+        "rejectedCount": rejected_count,
+        "halfMonthCount": half_month_count,
+        "monthlyCount": monthly_count,
+        "employmentRecordCount": employment_record_count,
+        "unemploymentRecordCount": unemployment_record_count,
+        "totalRecordCount": employment_record_count + unemployment_record_count,
+    }

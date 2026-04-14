@@ -72,6 +72,45 @@ def list_queue(current_user: dict = Depends(get_current_user)) -> list[dict]:
     return queues
 
 
+@router.get("/history")
+def list_history(current_user: dict = Depends(get_current_user)) -> list[dict]:
+    connection = get_connection()
+    records: list[dict] = []
+
+    for table_name, record_type, count_column in (
+        ("employment_records", "employment", "employed_count"),
+        ("unemployment_records", "unemployment", "unemployed_count"),
+    ):
+        query = f"""
+            SELECT r.id, r.report_type, r.report_period, r.workflow_status,
+                   r.city_review_comment, r.province_review_comment, r.submitted_at,
+                   r.city_reviewed_at, r.province_reviewed_at, r.created_at,
+                   r.{count_column} AS report_value, e.id AS enterprise_id, e.name AS enterprise_name
+            FROM {table_name} r
+            JOIN enterprises e ON e.id = r.enterprise_id
+        """
+        params: tuple = ()
+
+        if current_user["role"] == "enterprise" and current_user.get("enterprise_id"):
+            query += " WHERE r.enterprise_id = ?"
+            params = (current_user["enterprise_id"],)
+
+        query += " ORDER BY r.id DESC"
+
+        rows = connection.execute(query, params).fetchall()
+        records.extend(
+            {
+                **dict(row),
+                "record_type": record_type,
+            }
+            for row in rows
+        )
+
+    connection.close()
+    records.sort(key=lambda item: (item["submitted_at"] or item["created_at"] or "", item["id"]), reverse=True)
+    return records[:20]
+
+
 @router.post("/submit")
 def submit_record(
     payload: WorkflowSubmitRequest,
@@ -137,7 +176,7 @@ def review_record(
         connection.execute(
             f"""
             UPDATE {table_name}
-            SET workflow_status = ?, city_review_comment = ?
+            SET workflow_status = ?, city_review_comment = ?, city_reviewed_at = CURRENT_TIMESTAMP
             WHERE id = ?
             """,
             (next_status, payload.review_comment, payload.record_id),
@@ -149,7 +188,7 @@ def review_record(
         connection.execute(
             f"""
             UPDATE {table_name}
-            SET workflow_status = ?, province_review_comment = ?
+            SET workflow_status = ?, province_review_comment = ?, province_reviewed_at = CURRENT_TIMESTAMP
             WHERE id = ?
             """,
             (next_status, payload.review_comment, payload.record_id),
