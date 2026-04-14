@@ -24,6 +24,7 @@
 │  ├─ app.js
 │  ├─ index.html
 │  └─ styles.css
+├─ Demo_Script_v1.0.md
 └─ README.md
 ```
 
@@ -78,10 +79,17 @@ e:/桌面/云南省企业就业失业数据采集系统/.venv/Scripts/python.exe
 - 用户名：province_reviewer
 - 密码：province123
 
+## 配套交付材料
+
+1. 演示脚本：Demo_Script_v1.0.md
+2. 项目计划与甘特表：见 01_Project_Plan 目录。
+3. 变更单：见 03_Change_Requests 目录。
+4. 配置管理历史说明：见 02_CM_History 目录。
+
 ## 下一阶段计划
 
-1. 补充审核记录时间线和更细的状态展示。
-2. 补充移动端适配与查询统计完善。
-3. 整理 CM 历史截图、README 和变更关闭说明。
+1. 补充最终项目计划总成稿。
+2. 补充查询统计页、审核时间线与页面细节。
+3. 补充实际截图证据并完成课程提交包整理。
 4. 继续推进最终演示版打磨。
 
